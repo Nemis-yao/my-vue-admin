@@ -29,4 +29,23 @@ const props = defineProps({
 
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.is-active{
+    background-color: rgb(32, 136, 255);
+    color: #fff !important;
+    div{
+        span{
+            color: #fff;
+        }
+    }
+
+}
+.el-menu-item:hover{
+    background-color: rgb(34,136,255) !important;
+    color: #fff !important;
+}
+::v-deep .el-sub-menu__title:hover{
+    background-color: rgb(34,136,255) !important;
+    color: #fff !important;
+}
+</style>

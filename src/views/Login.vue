@@ -16,7 +16,7 @@
                         <el-input v-model="ruleForm.username"  placeholder="请输入用户名" prefix-icon="User" />
                     </el-form-item>
                     <el-form-item  prop="password">
-                        <el-input v-model="ruleForm.password"  placeholder="请输入密码" prefix-icon="Lock" />
+                        <el-input v-model="ruleForm.password"  placeholder="请输入密码" prefix-icon="Lock" show-password />
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" style="width: 100%;"  @click="submitForm(ruleFormRef)">登录</el-button>
@@ -32,6 +32,7 @@ import { reactive, ref } from 'vue'
 import logo from '@/assets/logo.png'
 import type { FormInstance, FormRules } from 'element-plus'
 import { userUserStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 // 定义表单属性
 interface RuleForm {
   username: string
@@ -59,15 +60,14 @@ const rules = reactive<FormRules<RuleForm>>({
 
 // 实例化
 const userStore = userUserStore()
-
+const router = useRouter()
 //登录
 const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  await formEl.validate((valid, fields) => {
+  await formEl.validate(async (valid, fields) => {
       if (valid) { 
-        console.log("我成功点击了")
-          userStore.login(ruleForm)
-        
+          await userStore.login(ruleForm)
+          router.push('/')
     } else {
       console.log('error submit!', fields)
     }
@@ -75,6 +75,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 }
 
 </script>
+
 <style scoped lang="less">
 .bg {
     background-image: url('../assets/bg.png');

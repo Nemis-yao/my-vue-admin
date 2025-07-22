@@ -10,7 +10,7 @@ service.interceptors.request.use((config) => {
     return config;
 }, (error: AxiosError) => {
     ElNotification({
-        title: 'Error',
+        title: '错误提醒',
         message: error.message,
         type: 'error',
     });
@@ -20,10 +20,18 @@ service.interceptors.request.use((config) => {
 
 // 响应拦截器
 service.interceptors.response.use((response) => {
-    return response.data
+    if (response.data.code != 200) {
+        ElNotification({
+            title: '错误提醒',
+            message: response.data.message,
+            type: 'error',
+        });
+    } else {
+        return response.data
+    }
 }, (error: AxiosError) => {
     ElNotification({
-        title: 'Error',
+        title: '错误提醒',
         message: error.message,
         type: 'error',
     });

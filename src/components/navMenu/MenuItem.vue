@@ -8,7 +8,7 @@
         </template>
         <MenuItem v-for="C in item.children" :key="C.url" :item="C"></MenuItem>
     </el-sub-menu>
-    <el-menu-item v-else :index="item.url">
+    <el-menu-item v-else :index="item.url" v-show="!(item.name == '订单详情')">
         <el-icon>
             <component :is="item.icon"></component>
         </el-icon>

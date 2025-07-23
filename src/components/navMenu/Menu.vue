@@ -3,7 +3,7 @@
         <img :src="logo" width="34px" height="34px" />
         <h1>动力港湾</h1>
     </div>
-    <el-menu>
+    <el-menu :router="true" :default-active="$route.path">
         <MenuItem v-for="item in Menulist" :key="item.url" :item="item"> </MenuItem>
     </el-menu>
 </template>

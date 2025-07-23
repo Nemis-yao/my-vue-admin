@@ -51,7 +51,7 @@ function add(url: string, icon: string, name: string) {
     background-color: rgb(34,136,255) !important;
     color: #fff !important;
 }
-::v-deep .el-sub-menu__title:hover{
+:deep(.el-sub-menu__title:hover){
     background-color: rgb(34,136,255) !important;
     color: #fff !important;
 }

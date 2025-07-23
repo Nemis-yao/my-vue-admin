@@ -78,7 +78,7 @@ const menulist = [
       url: "/system",
       icon: "Setting"
     },
-  
+
     {
       name: "个人中心",
       url: "/personal",
@@ -150,7 +150,7 @@ const menulist2 = [
       name: "会员卡管理",
       url: "/equipment",
       icon: "Magnet"
-    },  
+    },
     {
       name: "个人中心",
       url: "/personal",
@@ -167,7 +167,7 @@ Mock.mock("https://www.demo.com/login","post",(options:any)=>{
             data:{
                 token:"admintokenkkljbuo2w9xla2",
                 user:{
-                    username:"赖军",
+                    username:"狐狸",
                     roles:["admin"],
                 },
                 menulist
@@ -180,7 +180,7 @@ Mock.mock("https://www.demo.com/login","post",(options:any)=>{
             data:{
                 token:"usertokenkkljbuo2w9xla2",
                 user:{
-                    username:"江霞",
+                    username:"小白",
                     roles:["user"]
                 },
                 menulist:menulist2
@@ -191,7 +191,7 @@ Mock.mock("https://www.demo.com/login","post",(options:any)=>{
             code:401,
             message:"用户名或者密码有误"
         }
-    } 
+    }
 })
 
 //echart图表接口 折线图
@@ -649,7 +649,7 @@ Mock.mock("https://www.demo.com/stationList", 'post', (options: any) => {
       list:paginatedItems,
       total
     },
-    
+
   };
 });
 
@@ -1136,7 +1136,7 @@ Mock.mock("https://www.demo.com/revenueList", 'post', (options: any) => {
     data:{
       list:paginatedItems,
       total,
-    }  
+    }
   };
 });
 
@@ -1156,7 +1156,7 @@ let chargingPile = [
           {time:"17:27:17",msg:"充电90度，消费90元"},
           {time:"18:08:33",msg:"充电100度，消费100元"},
         ]
-    
+
     },//1空闲 2充电中 3连接中 4排队中 5被预约 6故障/离线
       { id: "CD1002", voltage: "314v", current: "212.2A", power: "21KW", tem: "29°c", status: 2, percent: "70%" },
       { id: "CD1003", voltage: "314v", current: "212.2A", power: "21KW", tem: "32°c", status: 1 },
@@ -1212,7 +1212,7 @@ let chargingPile = [
       { id: "CD1007", voltage: "314v", current: "212.2A", power: "21KW", tem: "32°c", status: 6 },
       { id: "CD1008", voltage: "314v", current: "212.2A", power: "21KW", tem: "32°c", status: 3, percent: "70%" },
       { id: "CD1009", voltage: "314v", current: "212.2A", power: "21KW", tem: "32°c", status: 1 },
-     
+
       { id: "CD1014", voltage: "314v", current: "212.2A", power: "21KW", tem: "32°c", status: 5 },
       { id: "CD1015", voltage: "314v", current: "212.2A", power: "21KW", tem: "32°c", status: 2 },
       { id: "CD1016", voltage: "314v", current: "212.2A", power: "21KW", tem: "32°c", status: 3, percent: "70%" },
@@ -2494,7 +2494,7 @@ Mock.Random.extend({
 //权限设置页面
 Mock.mock('https://www.demo.com/permissionList','post',(req:any)=>{
   const {pageSize} = JSON.parse(req.body);
-  console.log("权限设置接口收到参数",JSON.parse(req.body)) 
+  console.log("权限设置接口收到参数",JSON.parse(req.body))
 return {
     code:200,
     message:"操作成功",

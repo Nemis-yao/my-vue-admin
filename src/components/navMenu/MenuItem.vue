@@ -8,7 +8,7 @@
         </template>
         <MenuItem v-for="C in item.children" :key="C.url" :item="C"></MenuItem>
     </el-sub-menu>
-    <el-menu-item v-else :index="item.url" v-show="!(item.name == '订单详情')">
+    <el-menu-item v-else :index="item.url" @click="add(item.url,item.icon,item.name)"  v-show="!(item.name == '订单详情')">
         <el-icon>
             <component :is="item.icon"></component>
         </el-icon>
@@ -20,12 +20,19 @@
 import { defineProps } from "vue"
 import type { PropType } from 'vue'
 import type { MenuItem } from '@/types/user'
+import { useTabsStore } from "@/stores/tabs"
 const props = defineProps({
     item: {
         type: Object as PropType<MenuItem>,
         required: true
     }
 })
+
+const tabsStore = useTabsStore()
+function add(url: string, icon: string, name: string) {
+    tabsStore.addTabs(url, name, icon) // 添加页签
+    tabsStore.setCurrenTab(name,url) // 设置页签高亮
+}
 
 </script>
 

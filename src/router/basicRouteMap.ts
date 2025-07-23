@@ -4,6 +4,7 @@ const router: RouteRecordRaw[] = [
         path: '/',
         name: 'home',
         component: () => import('@/layouts/DefaultLayout.vue'),
+        redirect: '/dashboard',
         children: [
             {
                 path: '/dashboard',
@@ -63,6 +64,9 @@ const router: RouteRecordRaw[] = [
             {
                 path: '/system',
                 name: 'system',
+                meta: {
+                    needAuth: ['admin']
+                },
                 component: () => import('@/views/system/System.vue')
             },
             {

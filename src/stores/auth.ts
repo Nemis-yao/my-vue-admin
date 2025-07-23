@@ -18,6 +18,7 @@ export const userUserStore = defineStore("user", () => {
         menu: sessionStorage.getItem(MENU_KEY) ? JSON.parse(sessionStorage.getItem(MENU_KEY)!) : [],
     })
 
+    // 登录
     async function login(data: LoginParams) {
         try {
             const { data: { token, menulist, user: { username, roles } } } = await loginApi(data);
@@ -38,7 +39,15 @@ export const userUserStore = defineStore("user", () => {
         }
 
     }
+    // 退出登录
+    function logout() {
+        user.menu = []
+        user.roles = []
+        user.token = null
+        user.username = null
+        sessionStorage.clear()
+    }
     return {
-        user, login
+        user, login, logout
     }
 })

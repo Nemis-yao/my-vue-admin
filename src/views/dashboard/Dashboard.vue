@@ -1,6 +1,6 @@
 <template>
   <!-- 左边 -->
-  <el-row>
+  <el-row :gutter="20">
     <el-col :span="18">
       <!-- 第一块 -->
       <el-card v-loading="loading" element-loading-text="Loading...">
@@ -21,11 +21,7 @@
                 <template #title>
                   <div style="display: inline-flex; align-items: center">
                     异常设备
-                    <el-tooltip
-                      :content="`异常设备${item.abnormalValue},请尽快处理`"
-                      effect="dark"
-                      placement="top"
-                    >
+                    <el-tooltip :content="`异常设备${item.abnormalValue},请尽快处理`" effect="dark" placement="top">
                       <el-icon :size="12" style="margin-left: 4px">
                         <Warning />
                       </el-icon>
@@ -57,12 +53,7 @@
         </template>
         <div class="quick mt mb">
           <el-row>
-            <el-col
-              v-for="(item, index) in leftSecond"
-              :key="index"
-              :span="4"
-              @click="quickNavigate(item.tite)"
-            >
+            <el-col v-for="(item, index) in leftSecond" :key="index" :span="4" @click="quickNavigate(item.tite)">
               <img :src="item.img" />
               <p>{{ item.tite }}</p>
             </el-col>
@@ -87,11 +78,80 @@
       </el-card>
     </el-col>
     <!-- 右边 -->
-    <el-col :span="6"> </el-col>
+    <el-col :span="6">
+      <!-- 第一块 -->
+      <el-card>
+        <template #header>
+          <div class="card-header">
+            <span>设备总览</span>
+          </div>
+        </template>
+        <div ref="chart3" class="chart" style="height: 240px;"></div>
+      </el-card>
+      <!-- 第二块 -->
+      <el-card class="mt">
+        <template #header>
+          <div class="card-header">
+            <span>营收统计</span>
+          </div>
+        </template>
+        <ul class="ranking-list">
+          <li class="ranking-item" v-for="item in revenue" :key="item.id">
+            <span class="rank" :style="{
+              backgroundColor:
+              item.id === 1 ? 'rgb(103, 194, 58)' :
+              item.id === 2 ? 'rgb(255, 193, 7)' :
+              item.id === 3 ? 'rgb(33, 150, 243)' : '',
+              color: '#fff'
+            }" v-if="item.id <= 3">
+              {{ item.id }}
+            </span>
+            <span class="rank" v-else>{{ item.id }}</span>
+            <span class="store-name">{{ item.location }}</span>
+            <span class="sales">{{ formatNumber(item.total) }}</span>
+            <span style="width: 15%;margin-left: 50px; text-align: right;">{{ item.percentage }}
+              <el-icon color="green" v-if="item.isUp === 0">
+                <CaretTop></CaretTop>
+              </el-icon>
+              <el-icon color="red" v-else>
+                <CaretBottom></CaretBottom>
+              </el-icon>
+            </span>
+
+
+          </li>
+        </ul>
+      </el-card>
+      <!-- 第三块 -->
+       <el-card class="mt">
+        <template #header>
+          <div class="card-header">
+            <span>故障警报</span>
+          </div>
+        </template>
+         <el-timeline style="max-width: 600px">
+    <el-timeline-item timestamp="2033/1/1" placement="top">
+      <el-card>
+        <h4>新纪元星际工厂</h4>
+      </el-card>
+    </el-timeline-item>
+    <el-timeline-item timestamp="2033/1/13" placement="top">
+      <el-card>
+        <h4>纳米工程实验室</h4>
+      </el-card>
+    </el-timeline-item>
+    <el-timeline-item timestamp="2033/1/17" placement="top">
+      <el-card>
+        <h4>超导能量站</h4>
+      </el-card>
+    </el-timeline-item>
+  </el-timeline>
+       </el-card>
+    </el-col>
   </el-row>
 </template>
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import flash from '@/assets/flash.png'
 import flash2 from '@/assets/flash2.png'
 import flash3 from '@/assets/flash3.png'
@@ -108,7 +168,8 @@ import { storeToRefs } from 'pinia'
 import type { MenuItem } from '@/types/user'
 import { useRouter } from 'vue-router'
 import { useChart } from '@/hook/useChart.ts'
-import { chartDataApi } from '@/api/dashboard/dashboard'
+import { chartDataApi, chartDataApi2, chartDataApi3 } from '@/api/dashboard/dashboard'
+import { CaretBottom } from '@element-plus/icons-vue'
 // 模拟左一数据
 const leftFirst = [
   {
@@ -218,92 +279,192 @@ function findMenuItemByName(arr: MenuItem[], name: string): MenuItem | null {
   return null
 }
 
-// ========================== 左三功能 ==========================
+// ========================== 左三功能 --- 折线图 ==========================
 // 对图标实例进行初始化
-const chart1 = ref(null)
 const chart2 = ref(null)
-
 const setChartData = async () => {
   // 定义基础模板
-  const chart1Options =reactive({
-  title: {
-    text: '电量统计'
-  },
-  tooltip: {
-    trigger: 'axis'
-  },
-  legend: {
-    data: []
-  },
-  xAxis: {
-    type: 'category',
-    boundaryGap: false,
-    data: ['13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00','20:00','21:00']
-  },
-  yAxis: {
-    type: 'value',
-    min: 0, // 最小值
-    max: 200, // 最大值
-    interval: 20, // 固定间隔
-    axisLabel: {
-      formatter: '{value} KW'
-    }
-  },
-  series: [
-    {
-      name: '充电量',
-      type: 'line',
-      smooth: true,
-      data: [],
-      markPoint: {
-        data: [
-          { type: 'max', name: 'Max' },
-          { type: 'min', name: 'Min' }
-        ]
-      },
-      
+  const chart1Options = reactive({
+    title: {
+      text: '电量统计'
     },
-    {
-      name: '充电时间长',
-      type: 'line',
-       smooth: true,
-      data: [],
-      markPoint: {
-        data: [
-          { type: 'max', name: 'Max' },
-          { type: 'min', name: 'Min' }
-        ]
-      },
+    tooltip: {
+      trigger: 'axis'
     },
-    {
-      name: '充电功率',
-      type: 'line',
-       smooth: true,
-      data: [],
-      markPoint: {
-        data: [
-          { type: 'max', name: 'Max' },
-          { type: 'min', name: 'Min' }
-        ]
-      },
+    legend: {
+      data: []
     },
-  ]
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: ['13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']
+    },
+    yAxis: {
+      type: 'value',
+      min: 0, // 最小值
+      max: 200, // 最大值
+      interval: 20, // 固定间隔
+      axisLabel: {
+        formatter: '{value} KW'
+      }
+    },
+    series: [
+      {
+        name: '',
+        type: 'line',
+        smooth: true,
+        data: [],
+        markPoint: {
+          data: [
+            { type: 'max', name: 'Max' },
+            { type: 'min', name: 'Min' }
+          ]
+        },
+
+      },
+      {
+        name: '',
+        type: 'line',
+        smooth: true,
+        data: [],
+        markPoint: {
+          data: [
+            { type: 'max', name: 'Max' },
+            { type: 'min', name: 'Min' }
+          ]
+        },
+      },
+      {
+        name: '',
+        type: 'line',
+        smooth: true,
+        data: [],
+        markPoint: {
+          data: [
+            { type: 'max', name: 'Max' },
+            { type: 'min', name: 'Min' }
+          ]
+        },
+      },
+    ]
   });
 
   // 请求接口
   const res = await chartDataApi()
   chart1Options.legend.data = res.data.list.map((item: any) => item.name)
-  for (let i = 0; i < res.data.list.length; i++){
+  for (let i = 0; i < res.data.list.length; i++) {
     chart1Options.series[i].name = res.data.list[i].name
     chart1Options.series[i].data = res.data.list[i].data
   }
-  
+
   return chart1Options  // 处理好后的数据
+}
+useChart(chart2, setChartData)
+
+// ========================== 左三功能 --- 饼图 ==========================
+const chart1 = ref(null)
+
+const setChartData1 = async () => {
+  const chart1Options = reactive({
+    legend: {
+      top: 'bottom'
+    },
+    tooltip: {
+      trigger: "item",
+      formatter: '{a}<br/>{b}:{c}'
+    },
+    series: [
+      {
+        name: '营收占比',
+        type: 'pie',
+        radius: ['50%', '70%'],
+        center: ['50%', '50%'],
+        roseType: 'area',
+        data: []
+      }
+    ],
+    graphic: {
+      type: "text",
+      left: "center",
+      top: "center",
+      style: {
+        text: '营收占比',
+        fontSize: 20,
+        color: '#333'
+      }
+    }
+  })
+
+  const res = await chartDataApi2()
+  chart1Options.series[0].data = res.data.list
+  return chart1Options
+}
+
+useChart(chart1, setChartData1)
+
+// ========================== 右一 --- 雷达图 ==========================
+const chart3 = ref(null)
+const setChartData3 = async () => {
+  const chart1Options = reactive({
+    radar: {
+      // shape: 'circle',
+      indicator: [
+        { name: '闲置数', max: 65 },
+        { name: '使用数', max: 160 },
+        { name: '故障数', max: 300 },
+        { name: '维修数', max: 380 },
+        { name: '更换数', max: 520 },
+        { name: '报废数', max: 250 }
+      ]
+    },
+    series: [
+      {
+        name: 'Budget vs spending',
+        type: 'radar',
+        data: [
+          {
+            value: [],
+            name: 'Allocated Budget'
+          }
+        ]
+      }
+    ]
+  })
+
+  const res = await chartDataApi3()
+  chart1Options.series[0].data[0].value = res.data.list
+  return chart1Options
+}
+
+useChart(chart3, setChartData3)
+
+// ========================== 右二 ==========================
+// 营收收入
+const revenue = [
+  { "id": 1, "location": "北京", "total": 100000, "percentage": "25%", "isUp": 0 },
+  { "id": 2, "location": "上海", "total": 150000, "percentage": "37.5%", "isUp": 1 },
+  { "id": 3, "location": "广州", "total": 80000, "percentage": "20%", "isUp": 0 },
+  { "id": 4, "location": "深圳", "total": 90000, "percentage": "22.5%", "isUp": 1 },
+  { "id": 5, "location": "杭州", "total": 110000, "percentage": "27.5%", "isUp": 1 },
+  { "id": 6, "location": "成都", "total": 75000, "percentage": "18.8%", "isUp": 0 },
+  { "id": 7, "location": "重庆", "total": 60000, "percentage": "15%", "isUp": 0 },
+  { "id": 8, "location": "南京", "total": 85000, "percentage": "21.3%", "isUp": 1 },
+  { "id": 9, "location": "武汉", "total": 70000, "percentage": "17.5%", "isUp": 0 },
+  { "id": 10, "location": "苏州", "total": 95000, "percentage": "23.8%", "isUp": 1 }
+];
+
+//用正则实现千分位逗号分隔
+function formatNumber(num:number) {
+  const str = String(num);
+  if (str.length <= 3) {
+    return str;
+  }
+  // 用正则实现千分位逗号分隔
+  return str.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 
 
-useChart(chart2,setChartData)
 </script>
 <style lang="less" scoped>
 .title {
@@ -317,6 +478,10 @@ useChart(chart2,setChartData)
   p {
     color: #86909c;
   }
+}
+.el-header{
+  height: 70px !important;
+  --el-header-height: 70px;
 }
 
 .equipment {
@@ -334,8 +499,41 @@ useChart(chart2,setChartData)
 .quick {
   text-align: center;
 }
+
 .chart {
   width: 100%;
-  height: 360px;
+  height: 600px;
+}
+
+.ranking-list {
+  .ranking-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+
+    .rank {
+      display: inline-block;
+      font-weight: bold;
+      color: #666;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 30px;
+    }
+
+    .store-name {
+      flex-grow: 1;
+      padding: 0 10px;
+    }
+
+    .sales {
+      color: #666;
+    }
+  }
+
+  .ranking-item:nth-child(even) {
+    background-color: rgb(253, 246, 236);
+  }
 }
 </style>

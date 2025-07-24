@@ -29,6 +29,7 @@ import TabsLayout from './TabsLayout.vue';
 }
 .el-header{
     padding: 0 !important;
+    height: 70px;
 }
 .el-main{
     height: 80vh;

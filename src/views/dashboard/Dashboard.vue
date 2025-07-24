@@ -91,7 +91,7 @@
   </el-row>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
 import flash from '@/assets/flash.png'
 import flash2 from '@/assets/flash2.png'
 import flash3 from '@/assets/flash3.png'
@@ -107,7 +107,8 @@ import { userUserStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import type { MenuItem } from '@/types/user'
 import { useRouter } from 'vue-router'
-import { useChart} from '@/hook/useChart.ts'
+import { useChart } from '@/hook/useChart.ts'
+import { chartDataApi } from '@/api/dashboard/dashboard'
 // 模拟左一数据
 const leftFirst = [
   {
@@ -221,24 +222,88 @@ function findMenuItemByName(arr: MenuItem[], name: string): MenuItem | null {
 // 对图标实例进行初始化
 const chart1 = ref(null)
 const chart2 = ref(null)
-const chart1Options ={
+
+const setChartData = async () => {
+  // 定义基础模板
+  const chart1Options =reactive({
   title: {
-    text: 'ECharts 入门示例',
+    text: '电量统计'
   },
-  tooltip: {},
+  tooltip: {
+    trigger: 'axis'
+  },
+  legend: {
+    data: []
+  },
   xAxis: {
-    data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子'],
+    type: 'category',
+    boundaryGap: false,
+    data: ['13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00','20:00','21:00']
   },
-  yAxis: {},
+  yAxis: {
+    type: 'value',
+    min: 0, // 最小值
+    max: 200, // 最大值
+    interval: 20, // 固定间隔
+    axisLabel: {
+      formatter: '{value} KW'
+    }
+  },
   series: [
     {
-      name: '销量',
-      type: 'bar',
-      data: [5, 20, 36, 10, 10, 20],
+      name: '充电量',
+      type: 'line',
+      smooth: true,
+      data: [],
+      markPoint: {
+        data: [
+          { type: 'max', name: 'Max' },
+          { type: 'min', name: 'Min' }
+        ]
+      },
+      
     },
-  ],
+    {
+      name: '充电时间长',
+      type: 'line',
+       smooth: true,
+      data: [],
+      markPoint: {
+        data: [
+          { type: 'max', name: 'Max' },
+          { type: 'min', name: 'Min' }
+        ]
+      },
+    },
+    {
+      name: '充电功率',
+      type: 'line',
+       smooth: true,
+      data: [],
+      markPoint: {
+        data: [
+          { type: 'max', name: 'Max' },
+          { type: 'min', name: 'Min' }
+        ]
+      },
+    },
+  ]
+  });
+
+  // 请求接口
+  const res = await chartDataApi()
+  chart1Options.legend.data = res.data.list.map((item: any) => item.name)
+  for (let i = 0; i < res.data.list.length; i++){
+    chart1Options.series[i].name = res.data.list[i].name
+    chart1Options.series[i].data = res.data.list[i].data
+  }
+  
+  return chart1Options  // 处理好后的数据
 }
-useChart(chart1,chart1Options)
+
+
+
+useChart(chart2,setChartData)
 </script>
 <style lang="less" scoped>
 .title {
@@ -271,6 +336,6 @@ useChart(chart1,chart1Options)
 }
 .chart {
   width: 100%;
-  height: 400px;
+  height: 360px;
 }
 </style>

@@ -39,7 +39,7 @@
         </el-row>
     </el-card>
     <el-card class="mt">
-        <el-button type="primary" icon="Plus">新增充电站</el-button>
+        <el-button type="primary" icon="Plus" @click="handleAdd">新增充电站</el-button>
     </el-card>
     <el-card class="mt">
         <el-table :data="tableData" v-loading="loading">
@@ -59,9 +59,18 @@
             <el-table-column prop="person" label="站点负责人" />
             <el-table-column prop="tel" label="负责人电话" />
             <el-table-column label="操作">
-                <template #default>
-                    <el-button link type="primary">编辑</el-button>
-                    <el-button link type="danger">删除</el-button>
+                <template #default="scope">
+                    <el-button link type="primary" @click="edit(scope.row)">编辑</el-button>
+                  <el-popconfirm
+                    class="box-item"
+                    title="确认要删除当前站点么"
+                    placement="right-start"
+                    @confirm="handleDelete(scope.row.id)"
+                  >
+                    <template #reference>
+                      <el-button link type="danger">删除</el-button>
+                    </template>
+                  </el-popconfirm>
                 </template>
             </el-table-column>
         </el-table>
@@ -69,13 +78,20 @@
             :page-sizes="[10, 20, 30, 40]" layout="total, sizes, prev, pager, next, jumper" :total="total"
             @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </el-card>
+
+
+  <StationForm :dialog-visible="visible" @close="visible=false" @reload="getTableDataList"></StationForm>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
-import { ListApi } from '@/api/chargingstation/chargingstation';
+import { ref, reactive, onMounted } from 'vue'
+import { ListApi,deleteApi } from '@/api/chargingstation/chargingstation';
 import DictTag from '@/components/dict/DictTag.vue';
 import type { ListType } from '@/api/chargingstation/type'
+import type {RowType} from '@/types/station.ts'
+import StationForm from '@/views/chargingstation/components/StationForm.vue'
+import {useStationStore} from '@/stores/staticon.ts'
+import { ElMessage } from 'element-plus'
 const select = ref("name")
 const loading = ref(false)
 // 定义查询
@@ -84,7 +100,7 @@ const formInline = reactive({
     value: 1
 })
 
-// 初始查询 
+// 初始查询
 const queryParams = reactive<ListType>({
     page: 1,
     pageSize: 10,
@@ -103,7 +119,7 @@ const handleSizeChange = (size:number) => {
     getTableDataList()
 }
 
-const handleCurrentChange = (page:number) => { 
+const handleCurrentChange = (page:number) => {
     queryParams.page = page
     getTableDataList()
 }
@@ -133,7 +149,7 @@ const CSoptions = [
     },
 ]
 
-const tableData = ref([])
+const tableData = ref<RowType[]>([])
 const getTableDataList = async () => {
     loading.value=true
     const res = await ListApi({...queryParams,status:formInline.value,[select.value]:formInline.input})
@@ -149,6 +165,43 @@ const handleReset = () => {
     queryParams.status = 1
     queryParams.pageSize = 10
     getTableDataList()
+}
+
+// 弹窗
+const  visible = ref(false)
+
+// 编辑按钮
+const stationStore = useStationStore()
+const edit = (row: RowType) => {
+  stationStore.setRowData(row)
+  visible.value = true
+}
+
+// 添加按钮
+const handleAdd = () => {
+  //初始化
+  stationStore.setRowData({
+    name:'',
+    id:'',
+    city:"",
+    fast:"",
+    slow:"",
+    status:1,
+    now:'',
+    fault:"",
+    person:'',
+    tel:''
+  })
+  visible.value = true
+}
+
+//删除按钮
+const handleDelete = async (id: string) => {
+  const res = await deleteApi(id)
+  if (res.code === 200) {
+    ElMessage.success(res.data)
+  }
+  await getTableDataList()
 }
 
 onMounted(() => {
